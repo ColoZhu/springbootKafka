@@ -1,0 +1,111 @@
+server:
+  port: 8090
+  servlet:
+    #    # 项目contextPath
+    context-path: /kafka
+
+spring:
+  application:
+    name: kafka
+  datasource:
+    #  spring.datasource.test1
+    #    druid:
+    test1:
+      #      jdbc-url,url,jdbcurl哪个合适用哪个
+      jdbcurl: jdbc:mysql://localhost:3306/test1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8
+      username: root
+      password: 123456
+      initial-size: 1
+      min-idle: 1
+      max-active: 20
+      test-on-borrow: true
+      #       driver-class-name: com.mysql.jdbc.Driver
+      #       最新的mysql8版本推荐的驱动
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      type: com.alibaba.druid.pool.DruidDataSource
+      #       下面是另外加的配置数据源的参数
+      minPoolSize: 3
+      maxPoolSize: 25
+      maxLifetime: 20000
+      borrowConnectionTimeout: 30
+      loginTimeout: 30
+      maintenanceInterval: 60
+      maxIdleTime: 60      #连接回收时间
+
+    test2:
+      jdbcurl: jdbc:mysql://localhost:3306/test2?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8
+      username: root
+      password: 123456
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      type: com.alibaba.druid.pool.DruidDataSource
+      minPoolSize: 3
+      maxPoolSize: 25
+      maxLifetime: 20000
+      borrowConnectionTimeout: 30
+      loginTimeout: 30
+      maintenanceInterval: 60
+      maxIdleTime: 60
+
+
+  #============== kafka ===================
+
+
+  kafka:
+    # 指定kafka 代理地址，可以多个
+    #下面的配置，如bootstrap-servers不能写成bootstrap.servers，用点号分隔取不到值
+    #bootstrap-servers: ["192.168.1.204:9092","192.168.1.100:9092","192.168.1.200:9092"]
+    # 腾讯主机公网
+    bootstrap-servers: ["129.28.177.161:9092"]
+    #对应字符串列表(属于"spring.kafka"配置组)
+    schema-registry-url:
+      - "http://129.28.177.161:18081"
+      # - "http://192.168.1.100:18081"
+      # - "http://192.168.1.200:18081"
+
+
+    # =============== provider  =======================
+    producer:
+      retries: 100000
+      # 每次批量发送消息的数量
+      batch-size: 16384 #下划线连接
+      buffer-memory: 33554432 #这个属性将绑定到@ConfigurationProperties(prefix = "spring.kafka.producer")注解的类的bufferMemory字段
+      enableIdempotence: false #写成驼峰式
+      max-in-flight-requests-per-connection: 1 #横线连接
+      #linger-ms: 10
+      #ACKS: "-1" #大写字母
+      #topic: "role_operation_dev"
+
+      # 指定消息key和消息体的编解码方式
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    #=============== consumer  =======================
+    #  指定默认消费者group id
+    consumer:
+      group-id: test-hello-group
+      #group.id: "record-service" #错误示范，用点号分割是无法绑定到对象属性上的
+      auto-offset-reset: earliest
+      enable-auto-commit: true
+      auto-commit-interval: 100
+      # topics: ["role_operation_dev"]
+
+
+      # 指定消息key和消息体的编解码方式
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+
+#设置静态资源路径，多个以逗号分隔
+spring.resources.static-locations: classpath:static/,file:static/
+
+# 日志配置
+logging:
+  level:
+    czs: debug
+    org.springframework: WARN
+    org.spring.springboot.dao: debug
+
